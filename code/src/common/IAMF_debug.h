@@ -106,7 +106,7 @@
   do {                                                                  \
     if (IA_DBG_LEVEL & level) {                                         \
       fprintf(stderr, "[%-9s:%s:%s(%4d):%s]>" fmt "\n", IA_TAG, slevel, \
-              __MODULE__, __LINE__, __FUNCTION__, ##arg);               \
+              __FILE__, __LINE__, __FUNCTION__, ##arg);               \
     }                                                                   \
   } while (0)
 #endif
