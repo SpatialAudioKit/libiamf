@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-#include "IAMF_defines.h"
+#include <iamf/IAMF_defines.h>
 
 #ifdef __cplusplus
 extern "C" {
