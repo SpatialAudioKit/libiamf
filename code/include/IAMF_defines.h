@@ -224,4 +224,9 @@ typedef enum {
   /// @brief The end of expanded loudspeaker layout
   IA_CHANNEL_LAYOUT_EXPANDED_END,
 } IAChannelLayoutType;
+
+/**
+ A callback function that can be used to tap ambisonic streams, for visualization etc.
+ */
+typedef void (*AmbisonicsTap)(uint64_t elm_id, const float *in[], int channels, int nsamples);
 #endif /* IAMF_DEFINES_H */

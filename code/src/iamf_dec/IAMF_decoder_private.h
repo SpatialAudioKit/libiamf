@@ -189,6 +189,7 @@ typedef struct AmbisonicsContext {
   int mode;
   uint8_t *mapping;
   int mapping_size;
+  AmbisonicsTap tap;
 } AmbisonicsContext;
 
 typedef struct IAMF_Stream {
@@ -335,7 +336,8 @@ typedef struct IAMF_DecoderContext {
   uint32_t time_precision;
 
   IAMF_extradata metadata;
-
+  
+  AmbisonicsTap tap;
 } IAMF_DecoderContext;
 
 struct IAMF_Decoder {

@@ -64,7 +64,7 @@ int IAMF_decoder_close(IAMF_DecoderHandle handle);
  * @return    @ref IAErrCode.
  */
 int IAMF_decoder_configure(IAMF_DecoderHandle handle, const uint8_t *data,
-                           uint32_t size, uint32_t *rsize);
+                           uint32_t size, uint32_t *rsize, AmbisonicsTap tap);
 
 /**
  * @brief     Decode bitstream.

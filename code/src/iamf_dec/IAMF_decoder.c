@@ -1846,7 +1846,7 @@ void iamf_stream_free(IAMF_Stream *s) {
 }
 
 static IAMF_Stream *iamf_stream_new(IAMF_Presentation *pst, IAMF_Element *elem,
-                                    IAMF_CodecConf *conf, LayoutInfo *layout) {
+                                    IAMF_CodecConf *conf, LayoutInfo *layout, AmbisonicsTap tap) {
   IAMF_Stream *stream = IAMF_MALLOCZ(IAMF_Stream, 1);
   if (!stream) goto stream_fail;
   ElementConf *ec =
@@ -1988,6 +1988,7 @@ static IAMF_Stream *iamf_stream_new(IAMF_Presentation *pst, IAMF_Element *elem,
     ctx->mode = iamf_stream_mode_ambisonics(aconf->ambisonics_mode);
     ctx->mapping = aconf->mapping;
     ctx->mapping_size = aconf->mapping_size;
+    ctx->tap = tap;
 
     iamf_stream_set_output_layout(stream, layout);
     ia_logi("stream mode %d", ctx->mode);
@@ -2096,7 +2097,7 @@ static int iamf_stream_enable(IAMF_DecoderHandle handle, IAMF_Element *elem) {
   conf = iamf_database_element_get_codec_conf(db, element_id);
   ia_logd("codec conf id %" PRIu64, conf->codec_conf_id);
 
-  stream = iamf_stream_new(pst, elem, conf, ctx->output_layout);
+  stream = iamf_stream_new(pst, elem, conf, ctx->output_layout, ctx->tap);
   if (!stream) goto stream_enable_fail;
 
   if (iamf_stream_set_max_frame_size(handle, stream) < 0)
@@ -2959,6 +2960,12 @@ static int iamf_stream_render(IAMF_StreamRenderer *sr, float *in, float *out,
       }
     }
   } else if (stream->scheme == AUDIO_ELEMENT_TYPE_SCENE_BASED) {
+    AmbisonicsContext *ctx = (AmbisonicsContext *)stream->priv;
+
+    if (ctx->tap) {
+      ctx->tap(stream->element_id, (const float**)sin, inchs, frame_size);
+    }
+      
 #if ENABLE_HOA_TO_BINAURAL
     if (stream->final_layout->layout.type == IAMF_LAYOUT_TYPE_BINAURAL &&
         sr->headphones_rendering_mode == 1) {
@@ -4180,7 +4187,7 @@ int IAMF_decoder_close(IAMF_DecoderHandle handle) {
 
 int iamf_decoder_internal_configure(IAMF_DecoderHandle handle,
                                     const uint8_t *data, uint32_t size,
-                                    uint32_t *rsize) {
+                                    uint32_t *rsize, AmbisonicsTap tap) {
   int ret = IAMF_OK;
   IAMF_DecoderContext *ctx;
   IAMF_DataBase *db;
@@ -4190,6 +4197,7 @@ int iamf_decoder_internal_configure(IAMF_DecoderHandle handle,
   if (!handle) return IAMF_ERR_BAD_ARG;
 
   ctx = &handle->ctx;
+  ctx->tap = tap;
   db = &ctx->db;
   if (ctx->need_configure & IAMF_DECODER_CONFIG_OUTPUT_LAYOUT) {
     LayoutInfo *old = ctx->output_layout;
@@ -4307,9 +4315,9 @@ int iamf_decoder_internal_configure(IAMF_DecoderHandle handle,
 }
 
 int IAMF_decoder_configure(IAMF_DecoderHandle handle, const uint8_t *data,
-                           uint32_t size, uint32_t *rsize) {
+                           uint32_t size, uint32_t *rsize, AmbisonicsTap tap) {
   uint32_t rs = 0;
-  int ret = iamf_decoder_internal_configure(handle, data, size, &rs);
+  int ret = iamf_decoder_internal_configure(handle, data, size, &rs, tap);
 
   if (rsize) {
     *rsize = rs;
@@ -4326,7 +4334,7 @@ int IAMF_decoder_configure(IAMF_DecoderHandle handle, const uint8_t *data,
     handle->ctx.need_configure = IAMF_DECODER_CONFIG_PRESENTATION;
     handle->ctx.status = IAMF_DECODER_STATUS_RECEIVE;
     ia_logd("configure with complete descriptor OBUs.");
-    ret = iamf_decoder_internal_configure(handle, 0, 0, 0);
+    ret = iamf_decoder_internal_configure(handle, 0, 0, 0, 0);
   }
 
   if (ret != IAMF_OK) ia_loge("fail to configure decoder.");
