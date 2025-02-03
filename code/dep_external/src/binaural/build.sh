@@ -50,7 +50,12 @@ cd $PROGDIR
 git clone -b visr --single-branch https://github.com/ebu/bear.git visr
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>VISR Compile<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 cd $VISR_DIR
-sed -i '1 i set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)' src/libefl/CMakeLists.txt
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' '1i\
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)' src/libefl/CMakeLists.txt
+else
+    sed -i '1i set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)' src/libefl/CMakeLists.txt
+fi
 rm -f -r build
 cmake -B build . $CONFIG_FLAGS_VISR  -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER
 cmake --build build
