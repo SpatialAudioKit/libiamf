@@ -18,7 +18,7 @@ README.md
 
 ### Prerequisites
  1. [CMake](https://cmake.org) version 3.6 or higher.
- 2. [boost](https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_1_82_0.zip), version 1.82
+ 2. [boost](https://archives.boost.io/release/1.82.0/source/boost_1_82_0.zip), version 1.82
 ~~~
     $ ./bootstrap.sh --with-toolset=gcc
     $ ./b2 toolset=gcc
